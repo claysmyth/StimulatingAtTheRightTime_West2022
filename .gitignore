@@ -5,7 +5,6 @@
 *.asv
 *.tif
 *.csv
-ABC_dependencies/
 *.7z
 *.pptx
 *.mat
