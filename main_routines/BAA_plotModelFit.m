@@ -2,7 +2,9 @@ function [R] = BAA_plotModelFit(Rorg)
 close all
 cmap = linspecer(6);
 %% Load Model Parameters
-load([Rorg.rootn 'data\modelfit\SimModelData_M10.mat'],'R','m','p')
+fittedModelPath = fullfile(Rorg.rootn, 'data', 'modelfit', ...
+    'SimModelData_M10.mat');
+load(fittedModelPath,'R','m','p')
 R.rootn = Rorg.rootn;
 R.filepathn = Rorg.filepathn;
 % Simulate the Base Model
@@ -27,7 +29,9 @@ for i = 1:6
 end
 xlim([31 33])
 
-load([Rorg.rootn 'data\Storage\L6_lesion_rat_020317.mat'],'FTdata')
+ratDataPath = fullfile(Rorg.rootn, 'data', 'Storage', ...
+    'L6_lesion_rat_020317.mat');
+load(ratDataPath, 'FTdata');
 
 subplot(2,1,2)
 X = FTdata.ContData.trial{1}([1 11 2 20],:);

@@ -5,7 +5,7 @@ set(0,'defaultAxesFontName','Arial')
 % File managment
 R.projectn = 'Rat_NPD';
 R.out.tag = 'InDrt_ModCompRev2';
-R.filepathn = [R.rootn 'data\storage'];
+R.filepathn = fullfile(R.rootn, 'data', 'storage');
 
 % 
 %% DATA SPECIFICATION

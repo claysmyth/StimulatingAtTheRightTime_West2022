@@ -1,6 +1,8 @@
 function R = project_AddPaths(R)
 %
-switch getenv('computername')
+% first obtain name of the current user
+U = char(java.lang.System.getProperty('user.name'));
+switch U
     case 'DESKTOP-1QJTIMO'
         gitpath =  'C:\Users\Tim West\Documents\GitHub';
         madpath = 'C:\Users\Tim West\Documents\MATLAB ADDONS';
@@ -9,6 +11,10 @@ switch getenv('computername')
         gitpath =  'D:\GITHUB';
         madpath = 'C:\Users\timot\OneDrive\Documents\Work\MATLAB ADDONS';
         spmpath = 'D:\GITHUB\spm12';
+    case 'jyao'                                                             % for all of jyao's scripts
+        gitpath = fullfile('~', 'local', 'gitprojects');
+        spmpath = fullfile(gitpath, 'spm12');
+        
     otherwise
         error('You need to add your PC specific paths - ...please look at project_AddPaths.m for template')
 end
@@ -17,7 +23,7 @@ if ~exist('gitpath2','var')
     gitpath2 = gitpath;
 end
 
-R.rootn = [gitpath2 '\StimulatingAtTheRightTime_2021\'];
+R.rootn = fullfile(gitpath2, 'StimulatingAtTheRightTime_West2022');
 
 % Add the root
 addpath(genpath(R.rootn))
