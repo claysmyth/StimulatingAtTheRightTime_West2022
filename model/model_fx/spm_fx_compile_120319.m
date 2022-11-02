@@ -80,7 +80,7 @@ for condsel = 1:numel(R.condnames)
     n     = m.m;
     model = m.dipfit.model;
     for i = 1:n
-        if  strcmp(model(i).source,'ERP')
+        if strcmp(model(i).source,'ERP')
             nmm(i) = 1;
         elseif strcmp(model(i).source,'CMC')
             nmm(i) = 2;

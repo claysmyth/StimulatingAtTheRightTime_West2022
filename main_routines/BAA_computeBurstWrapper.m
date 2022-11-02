@@ -1,5 +1,5 @@
 function [R,BB] = BAA_computeBurstWrapper(R)
-rootan = [R.rootn 'data\ConnectionSweep'];
+rootan = fullfile(R.rootn, 'data', 'ConnectionSweep');
 close all;
 
 %% Sets up figure
@@ -17,7 +17,7 @@ segL = []; segA = [];
 
 for CON = 1:2
     BB = [];
-    load([rootan '\BB_' R.out.tag '_DiscreteData.mat'],'dataSelect')
+    load(fullfile(rootan, ['BB_' R.out.tag '_DiscreteData.mat']),'dataSelect')
     for state = 1:4
         %% Find Burst Epochs
         % Get Data

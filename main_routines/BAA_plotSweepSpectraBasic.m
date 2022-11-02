@@ -1,6 +1,6 @@
 function R = BAA_plotSweepSpectraBasic(R)
 close all
-rootan = [R.rootn 'data\ConnectionSweep'];
+rootan = fullfile(R.rootn, 'data', 'ConnectionSweep');
 
 %% Set up plot options
 R.CONnames = {'M2 -> STN','GPe -| STN'};
@@ -14,8 +14,8 @@ statecmap{2} = scmap(3:4,:);
 figure(1)
 
 for CON = 1:2
-    load([rootan '\BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_feat.mat'],'feat')
-    load([rootan '\BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_ck_1.mat'],'ck_1')
+    load(fullfile(rootan, ['BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_feat.mat']),'feat')
+    load(fullfile(rootan, ['BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_ck_1.mat']),'ck_1')
     
     % Plot M2 Spectra
     if CON == 1
@@ -53,9 +53,9 @@ set(gcf,'Position',[ 518         250        1211         633])
 
 %% Get spectral stats
 for CON = 1:2
-    load([rootan '\BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_feat.mat'],'feat')
-    load([rootan '\BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_ck_1.mat'],'ck_1')
-    load([rootan '\BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_xsim.mat'],'xsim')
+    load(fullfile(rootan, ['BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_feat.mat']),'feat')
+    load(fullfile(rootan, ['BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_ck_1.mat']),'ck_1')
+    load(fullfile(rootan, ['BB_' R.out.tag '_ConnectionSweep_CON_' num2str(CON) '_xsim.mat']),'xsim')
     
     [~,~,bpowr,fpow,bcohr,fcoh,fpowCtx,bpowrCtx] = computeBetaSpectralStats(R.frqz,feat);
     ck_1 = ck_1(CON,:); % The scale for this connection modification
@@ -82,5 +82,5 @@ for CON = 1:2
     dataProperties(:,:,CON) = [bpowrCtx(indsel); fpowCtx(indsel); bpowr(indsel); fpow(indsel);  bcohr(indsel); fcoh(indsel);]
     
 end
-save([rootan '\BB_' R.out.tag '_DiscreteData.mat'],'dataSelect','dataProperties')
+save(fullfile(rootan, ['BB_' R.out.tag '_DiscreteData.mat']),'dataSelect','dataProperties')
 

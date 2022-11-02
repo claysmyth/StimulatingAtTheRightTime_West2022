@@ -29,26 +29,25 @@ for i = 1:6
 end
 xlim([31 33])
 
-ratDataPath = fullfile(Rorg.rootn, 'data', 'Storage', ...
-    'L6_lesion_rat_020317.mat');
-load(ratDataPath, 'FTdata');
-
-subplot(2,1,2)
-X = FTdata.ContData.trial{1}([1 11 2 20],:);
-T = FTdata.ContData.time{1};
-for i = 1:4
-    plot(T,X(i,:)-(i*0.2))
-    hold on  
+% ratDataPath = fullfile(Rorg.rootn, 'data', 'Storage', ...
+%     'L6_lesion_rat_020317.mat');
+% load(ratDataPath, 'FTdata');
+% 
+% subplot(2,1,2)
+% X = FTdata.ContData.trial{1}([1 11 2 20],:);
+% T = FTdata.ContData.time{1};
+% for i = 1:4
+%     plot(T,X(i,:)-(i*0.2))
+%     hold on  
+% end
+% xlim([31 33])
+% 
+% % Plot Feature Space
+% R = prepareRatData_NoGauss_Group_NPD(R,0,0);
+% 
+% figure(2)
+% plotABCSpectraOnly(R.data.feat_xscale,R.data.feat_emp,feat_sim)
+% figure(3)
+% npdplotter_110717({R.data.feat_emp},{feat_sim},R.data.feat_xscale,R,[],[])
+% for i = 1:6; for j = 1:6; if i~=j;subplot(6,6,sub2ind([6 6],j,i));ylim([0 0.65]); end; end; end
 end
-xlim([31 33])
-
-% Plot Feature Space
-R = prepareRatData_NoGauss_Group_NPD(R,0,0);
-
-figure(2)
-plotABCSpectraOnly(R.data.feat_xscale,R.data.feat_emp,feat_sim)
-figure(3)
-npdplotter_110717({R.data.feat_emp},{feat_sim},R.data.feat_xscale,R,[],[])
-for i = 1:6; for j = 1:6; if i~=j;subplot(6,6,sub2ind([6 6],j,i));ylim([0 0.65]); end; end; end
-
-
