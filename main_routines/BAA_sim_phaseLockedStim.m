@@ -102,8 +102,8 @@ for SScomb = 1 % These are the different stim types
     
     %% Connection Sets
     rootan = fullfile(Rorg.rootn, 'data', 'ConnectionSweep');
-    load(fullfile(rootan, [BB_' Rorg.out.tag '_ConnectionSweep_CON_1_ck_1.mat'], ...
-        'ck_1'));                                                            % load connection bands (CON 1 and 2 have same data)
+    load(fullfile(rootan, ['BB_' Rorg.out.tag '_ConnectionSweep_CON_1_ck_1.mat']), ...
+        'ck_1');                                                            % load connection bands (CON 1 and 2 have same data)
     
     R.frqz = 6:.2:148;
     % Simulation Conditions
