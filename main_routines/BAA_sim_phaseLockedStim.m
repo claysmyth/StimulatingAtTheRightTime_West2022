@@ -1,7 +1,8 @@
 function [R] = BAA_sim_phaseLockedStim(Rorg)
 close all
 %% Load in the model
-load([Rorg.rootn 'data\modelfit\SimModelData_M10.mat'],'R','m','p')
+load(fullfile(Rorg.rootn, 'data', 'modelfit', 'SimModelData_M10.mat'), ...
+    'R','m','p');
 R.rootn = Rorg.rootn;
 R.filepathn = Rorg.filepathn;
 porg = p;
@@ -100,8 +101,9 @@ for SScomb = 1 % These are the different stim types
     R.IntP.phaseStim.sensStm = [senssite stimsite];
     
     %% Connection Sets
-    rootan = [Rorg.rootn 'data\ConnectionSweep'];
-    load([rootan '\BB_' Rorg.out.tag '_ConnectionSweep_CON_1_ck_1.mat'],'ck_1'); % load connection bands (CON 1 and 2 have same data)
+    rootan = fullfile(Rorg.rootn, 'data', 'ConnectionSweep');
+    load(fullfile(rootan, [BB_' Rorg.out.tag '_ConnectionSweep_CON_1_ck_1.mat'], ...
+        'ck_1'));                                                            % load connection bands (CON 1 and 2 have same data)
     
     R.frqz = 6:.2:148;
     % Simulation Conditions

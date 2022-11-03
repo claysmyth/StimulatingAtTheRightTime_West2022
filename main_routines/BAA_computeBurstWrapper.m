@@ -100,7 +100,8 @@ for CON = 1:2
 end
 figure(102)
 set(gcf,'Position',[401         321        1368         657])
-save([rootan '\BB_' R.out.tag '_stateConnectivityMatrix.mat'],'specMat','connectMat','statBurstPLVl','segA','segL')
+save(fullfile(rootan, ['BB_' R.out.tag '_stateConnectivityMatrix.mat']), ...
+    'specMat','connectMat','statBurstPLVl','segA','segL');
 
 function burstSelIndsPerm = permuteInds(burstSelInds,X)
 % This function makes a random out of burst draw
