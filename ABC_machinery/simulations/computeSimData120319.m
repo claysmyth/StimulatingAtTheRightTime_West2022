@@ -1,4 +1,11 @@
 function [r2,pnew,feat_sim,xsims,xsims_gl,wflag] = computeSimData120319(R,m,uc,pnew,simtime,plotop)
+% outputs
+%   r2 - rsquared value between real and simulated features
+%   pnew - updated parameter structure
+%   feat_sim - simulated spectral and NPD features
+%   xsims - simulated dynamics (18, N)
+%   xsims_gl - simulated local field potentials with right gain values
+
 if nargin<6
     plotop = 0;
 end
