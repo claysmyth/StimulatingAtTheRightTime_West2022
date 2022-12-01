@@ -20,10 +20,10 @@
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 % clean up environment
-restoredefaultpath
-clear; close all
-% set plot defaults
-set(0,'defaultAxesFontSize',16)
+% restoredefaultpath
+% clear; close all
+% % set plot defaults
+% set(0,'defaultAxesFontSize',16)
 
 %% Initialise Paths and Configuration Structure (R)
 R = project_AddPaths();             % Organise file paths and add dependencies to path
@@ -33,11 +33,11 @@ R = setupBasalGangliaModel(R);      % Add configurations/settings to R
 BAA_plotModelFit(R);                % This plots the model
 
 %% Figure (2): Sweep over connections and plot spectra
-% BAA_sim_ConnectionSweep(R)       % Perform simulations with connectivity Sweep
-% BAA_plotSweepSpectraBasic(R);       % Plots the spectra from the sweep
+BAA_sim_ConnectionSweep(R)       % Perform simulations with connectivity Sweep
+BAA_plotSweepSpectraBasic(R);       % Plots the spectra from the sweep
 
 %% Figure (3): Define and Analyse Bursts in Spontaneous Data
-BAA_computeBurstWrapper(R);      % Computes bursts and saves spontaneous network states
+% BAA_computeBurstWrapper(R);      % Computes bursts and saves spontaneous network states
 % BAA_computeBurstWrapper_emp(R); % Computes bursts  and saves spontaneous network states for animal data
 
 %% Figure (4): Model of Stimulation

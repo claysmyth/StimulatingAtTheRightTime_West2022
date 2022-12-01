@@ -175,11 +175,11 @@ for SScomb = 1 % These are the different stim types
                 else % run once only
                     [~,~,feat_sim_stim{p},~,xsim_ip_stim{p},~]  = computeSimData120319(Rpar,m,uc_ip{1},Pbase,0);
                 end
-                uexs = load([Rpar.rootn 'data\phaseStimSave\stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
+                uexs = load([Rpar.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
                 pU{p} = uexs.uexs(Rpar.IntP.phaseStim.sensStm(2),round(Rpar.obs.brn*(1/R.IntP.dt))+1:end);
                 disp([CON state p])
             end
-            rmdir([R.rootn 'data\phaseStimSave\'],'s')
+            rmdir([R.rootn 'data/phaseStimSave/'],'s')
             % Create save version
             feat_sim_save{1,state} = feat_sim_base; feat_sim_save{2,state} = feat_sim_stim;
             xsim_ip{1,state} = xsim_ip_base; xsim_ip{2,state} = xsim_ip_stim;
@@ -187,13 +187,13 @@ for SScomb = 1 % These are the different stim types
             
         end
         %         Rorg.out.tag = 'tester';
-        rootan = [Rorg.rootn 'data\phaseLockedStim'];
+        rootan = [Rorg.rootn 'data/phaseLockedStim'];
         mkdir(rootan)
         
-        save([rootan '\BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_feat' num2str(SScomb) '.mat'],'feat_sim_save')
-        save([rootan '\BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_xsim' num2str(SScomb) '.mat'],'xsim_ip','-v7.3')
-        save([rootan '\BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_Rout' num2str(SScomb) '.mat'],'R')
-        save([rootan '\BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_pU_save' num2str(SScomb) '.mat'],'pU_save')
+        save([rootan '/BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_feat' num2str(SScomb) '.mat'],'feat_sim_save')
+        save([rootan '/BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_xsim' num2str(SScomb) '.mat'],'xsim_ip','-v7.3')
+        save([rootan '/BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_Rout' num2str(SScomb) '.mat'],'R')
+        save([rootan '/BB_' Rorg.out.tag '_phaseLockedStim_CON_' num2str(CON) '_pU_save' num2str(SScomb) '.mat'],'pU_save')
     end
     disp(SScomb)
 end

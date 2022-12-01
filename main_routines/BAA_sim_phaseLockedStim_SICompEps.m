@@ -87,11 +87,11 @@ for SScomb = 1:2
                 Rpar.IntP.phaseStim.stimFx = stimFx;
                 % Simulate with Stimulation
                 [~,~,feat_sim_stim{p},~,xsim_ip_stim{p}]  = computeSimData120319(Rpar,m,uc_ip{1},Pbase,0);
-                uexs = load([Rpar.rootn 'data\phaseStimSave\stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
+                uexs = load([Rpar.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
                 pU{p} = uexs.uexs(Rpar.IntP.phaseStim.sensStm(2),round(Rpar.obs.brn*(1/R.IntP.dt))+1:end);
                 disp([AmpN EpsN p])
             end
-            rmdir([R.rootn 'data\phaseStimSave\'],'s')
+            rmdir([R.rootn 'data/phaseStimSave/'],'s')
             % Create save version
             feat_sim_save{1,AmpN,EpsN} = feat_sim_base; feat_sim_save{2,AmpN,EpsN} = feat_sim_stim;
             xsim_ip{1,AmpN,EpsN} = xsim_ip_base; xsim_ip{2,AmpN,EpsN} = xsim_ip_stim;

@@ -273,8 +273,8 @@ for condsel = 1:numel(R.condnames)
     uexs = uexs(1:tstep,:)';
 end
 
-mkdir([R.rootn 'data\phaseStimSave\'])
-save([R.rootn 'data\phaseStimSave\stim_tmp_' sprintf('%3.f',1000*R.IntP.phaseStim.phaseshift)],'uexs')
+mkdir([R.rootn 'data/phaseStimSave/'])
+save([R.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*R.IntP.phaseStim.phaseshift)],'uexs')
 if wflag == 1
     xstore_cond{condsel} = NaN;
 end

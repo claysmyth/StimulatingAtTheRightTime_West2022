@@ -98,7 +98,7 @@ for obsN = 1:numel(obsNVec)
         Rpar.IntP.phaseStim.stimFx = stimFx;
         % Simulate with Stimulation
         [~,~,feat_sim_stim{p}]  = computeSimData120319(Rpar,m,uc_ip{1},Pbase,0);
-        uexs = load([Rpar.rootn 'data\phaseStimSave\stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
+        uexs = load([Rpar.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
         pU{p} = uexs.uexs(Rpar.IntP.phaseStim.sensStm(2),round(Rpar.obs.brn*(1/R.IntP.dt))+1:end);
         disp([obsN p])
     end

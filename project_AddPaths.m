@@ -14,6 +14,10 @@ switch U
     case 'jyao'                                                             % for all of jyao's scripts
         gitpath = fullfile('~', 'local', 'gitprojects');
         spmpath = fullfile(gitpath, 'spm12');
+    case 'claysmyth'
+        gitpath = fullfile('~', 'code')
+        spmpath = fullfile(gitpath,'spm12')
+        
         
     otherwise
         error('You need to add your PC specific paths - ...please look at project_AddPaths.m for template')
@@ -23,7 +27,7 @@ if ~exist('gitpath2','var')
     gitpath2 = gitpath;
 end
 
-R.rootn = fullfile(gitpath2, 'StimulatingAtTheRightTime_West2022');
+R.rootn = fullfile(gitpath2, 'StimulatingAtTheRightTime_West2022/');
 
 % Add the root
 addpath(genpath(R.rootn))

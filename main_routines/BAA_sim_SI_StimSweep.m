@@ -102,7 +102,7 @@ for parI = 1:16
         disp([parJ parI])
     end
     deltaBPMat(:,:,parI) = deltaBP;
-    rmdir([R.rootn 'data\phaseStimSave\'],'s')
+    rmdir([R.rootn 'data/phaseStimSave/'],'s')
     % Create save version
 end
 

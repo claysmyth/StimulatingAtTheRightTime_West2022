@@ -2,10 +2,10 @@ function BAA_fingerprintCompare_Sweep(R)
 close all
 scmap = [ brewermap(4,'Set1'); brewermap(2,'Set2')];
 SScomb = 1;
-rootan = [R.rootn 'data\ConnectionSweep'];
+rootan = [R.rootn '/data/ConnectionSweep'];
 
 %% Get Connection Strengths for each CON
-load([rootan '\BB_' R.out.tag '_ConnectionSweep_CON_1_ck_1.mat'],'ck_1'); % load connection bands (CON 1 and 2 have same data)
+load([rootan '/BB_' R.out.tag '_ConnectionSweep_CON_1_ck_1.mat'],'ck_1'); % load connection bands (CON 1 and 2 have same data)
 
 % Setup Spontaneous States
 statedef =[1 2;
@@ -14,8 +14,8 @@ statedef =[1 2;
     2 31];
 for stateSpont = 1:4
     % Now Load in  Data
-    rootan = [R.rootn 'data\phaseLockedStim'];
-    load([rootan '\BB_' R.out.tag '_phaseLockedStim_burstAnalysisSweepState_' num2str(statedef(stateSpont,2)) '_CON_' num2str(statedef(stateSpont,1)) '_feat' num2str(SScomb) '.mat'],...
+    rootan = [R.rootn '/data/phaseLockedStim'];
+    load([rootan '/BB_' R.out.tag '_phaseLockedStim_burstAnalysisSweepState_' num2str(statedef(stateSpont,2)) '_CON_' num2str(statedef(stateSpont,1)) '_feat' num2str(SScomb) '.mat'],...
         'connectMat','specMat');
     
     %No Stim matrices
@@ -31,8 +31,8 @@ for CON = 1:2
     matPLVStim = []; matSPECStim = [];
     for state = 1:31
         % Now Load in Stim Data
-        rootan = [R.rootn 'data\phaseLockedStim'];
-        load([rootan '\BB_' R.out.tag '_phaseLockedStim_burstAnalysisSweepState_' num2str(state) '_CON_' num2str(CON) '_feat' num2str(SScomb) '.mat'],...
+        rootan = [R.rootn 'data/phaseLockedStim'];
+        load([rootan '/BB_' R.out.tag '_phaseLockedStim_burstAnalysisSweepState_' num2str(state) '_CON_' num2str(CON) '_feat' num2str(SScomb) '.mat'],...
             'connectMat','specMat');
         
         %% Stim Matrices
