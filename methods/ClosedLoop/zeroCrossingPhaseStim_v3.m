@@ -1,8 +1,30 @@
 function [uexs,R,phi] = zeroCrossingPhaseStim_v3(uexs,R,tstep,xstore,dt,uvar,phi,demo)
+% This function simulates the phase dependent simulation that simulates at 
+% times of zerocrossing of the current phase
+%
+% output
+%   uexs - output external stimulation pattern
+%   R - 
+%   phi - phase of stimulation?
+%
+% input
+%   uexs - input external stimulation pattern
+%   R -  strucutre for experiment variables
+%   tstep - ?
+%   xstore - simulated local field potential pattern
+%   dt - time between two samples
+%   uvar - 
+%   phi - 
+%   demo - flag for whether or not to plot the stimulation pattern
+%       simulated
+
 if nargin<8
     demo = 0;
 end
 if (tstep+fix(R.IntP.phaseStim.stimlength/dt))<size(uexs,1) || tstep==0
+
+    % if eps==0 then extract the entire time series for the sense site
+    % otherwise extract a single buffer from the channel
     if R.IntP.phaseStim.eps == 0
         BU = xstore(R.obs.outstates(R.IntP.phaseStim.sensStm(1)),:);
         
@@ -10,6 +32,7 @@ if (tstep+fix(R.IntP.phaseStim.stimlength/dt))<size(uexs,1) || tstep==0
         BU = xstore(R.obs.outstates(R.IntP.phaseStim.sensStm(1)),end-((R.IntP.phaseStim.buff)/dt):end);
     end
     
+    % designs a bandpass filter in the low beta range
     if R.IntP.phaseStim.filtflag == 0
         [dum,B,A] = ft_preproc_bandpassfilter(BU, 1/dt, [14 21],4,'but','twopass');
         R.IntP.phaseStim.filtA = A;
@@ -43,6 +66,7 @@ if (tstep+fix(R.IntP.phaseStim.stimlength/dt))<size(uexs,1) || tstep==0
     BPhi([1:1/dt end-1/dt:end]) = [];
     
     % BEnv = smooth(abs(BUB),200); %abs(HB); %smooth(abs(HB),100);
+    % determines the threshold for beta burst events
     if R.IntP.phaseStim.eps == 0
         R.IntP.phaseStim.eps = prctile(BEnv,R.IntP.phaseStim.epsthresh);
         return

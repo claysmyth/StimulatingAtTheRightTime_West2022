@@ -63,19 +63,19 @@ for SScomb = 1 % These are the different stim types
         stimFx = @highFreqStim_pulse_v1;
         phflag = 0;
         R = typeIstimPars_v3(R);
-        R.IntP.phaseStim.stimAmp = 1e2;%
-        R.IntP.phaseStim.upperiod = 15;%
-        R.IntP.phaseStim.stimlength = 15;%
-    elseif SScomb == 8 % STN cDBS
+        R.IntP.phaseStim.stimAmp = 1e2;%                                    % stim amplitude is 100 times the variance of background noise
+        R.IntP.phaseStim.upperiod = 15;%                                    % update period of 15s
+        R.IntP.phaseStim.stimlength = 15;%                                  % stimulation length of 15s
+    elseif SScomb == 8 % M2 cDBS
         % Stimulating  M2 - cDBS
         senssite = 4; % STN
         stimsite = 1; % M2
         stimFx = @highFreqStim_pulse_v1;
         phflag = 0;
         R = typeIstimPars_v3(R);
-        R.IntP.phaseStim.stimAmp = 1e2;%
-        R.IntP.phaseStim.upperiod = 15;%
-        R.IntP.phaseStim.stimlength = 15;%
+        R.IntP.phaseStim.stimAmp = 1e2;%                                    % stim amplitude is 100 times the variance of background noise
+        R.IntP.phaseStim.upperiod = 15;%                                    % update period of 15s
+        R.IntP.phaseStim.stimlength = 15;%                                  % stimulation length of 15s
         
     elseif SScomb == 9 %
         % Stimulating  STN - STN cDBS modulation of baseline firing
