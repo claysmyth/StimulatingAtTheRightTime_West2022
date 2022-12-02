@@ -1,4 +1,4 @@
-function [uexs,R,phi] = getRandomStimulationAction(uexs,R,tstep,xstore,dt,uvar,phi, max_number_partitions, amplitude_range)
+function [uexs,R,phi] = getRandomStimulationAction(uexs,R,tstep,xstore,dt,uvar,phi, min_number_partitions, max_number_partitions, min_partition_length, amplitude_range)
 if (tstep+fix(R.IntP.phaseStim.stimlength/dt))<size(uexs,1) || tstep==0
 
     
@@ -7,15 +7,13 @@ if (tstep+fix(R.IntP.phaseStim.stimlength/dt))<size(uexs,1) || tstep==0
         R.IntP.phaseStim.eps = nan;
         return
     end
-    
-    random_scale_factor = unifrnd(-2,2); % For randomly scaling the dc stim amplitude
 
-    num_partitions = unifrnd(2, max_number_partitions);
+    num_partitions = unifrnd(min_number_partitions, max_number_partitions);
     partition_inds = [0, 0]; % Dummy instantiation
 
     action_length = tstep+fix(R.IntP.phaseStim.stimlength/dt);
 
-    while min(diff(partitions_inds)) < min_partition_size
+    while min(diff(partitions_inds)) < min_partition_length
         partition_inds = sort(randi(action_length, 1, num_partitions-1)); % Randomly partition action sequence
     end
 
