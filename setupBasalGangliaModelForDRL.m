@@ -23,6 +23,7 @@ R.obs.csd.reps = 32;                                                        % nu
 %% INTEGRATION
 % Main dynamics function
 R.IntP.intFx = @spm_fx_compile_120319;                                      % integration function for simulation
+%R.IntP.intFx = @spm_fx_compile_DRL;  
 R.IntP.compFx= @compareData_100717;                                         
 
 R.IntP.dt = .0005;                                                           % current sampling rate at 1kHz

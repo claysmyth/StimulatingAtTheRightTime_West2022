@@ -1,5 +1,12 @@
 function [R] = DRL_sim_bufferStim(Rorg, varargin)
 close all
+% In current iteration, varargin is an optional parameter for passing in an external stimulation vector. Size(varargin) = 1.
+    %% The above comment is liable to change.
+
+if length(varargin) == 1
+    external_stim_vector = varargin{1};
+end
+
 %% Load in the model
 load(fullfile(Rorg.rootn, 'data', 'modelfit', 'SimModelData_M10.mat'), ...
     'R','m','p');
@@ -38,6 +45,7 @@ for SScomb = 1 % These are the different stim types
         stimFx = @passExternalStimVector % External stim vector
         R.IntP.phaseStim.stimAmp = 1e2; % 1e4;%
         R.IntP.phaseStim.upperiod = 15;%
+        R.IntP.stimtype = 'external';
         %R.IntP.phaseStim.stimlength = stimlength;% 
     end
 end
@@ -64,7 +72,8 @@ uc{1} = uc{1}.*sqrt(R.IntP.dt);
 XBase = porg;
 
 % Phase To be Tested
-R.IntP.intFx = @spm_fx_compile_120319_stim;
+%R.IntP.intFx = @spm_fx_compile_120319_stim;
+R.IntP.intFx = @spm_fx_compile_DRL_stim;
 
 % Running only DC cDBS paradigms. No phase information.
 phaseShift = 0;
@@ -87,7 +96,7 @@ for CON =1:2
         R.IntP.phaseStim.switch = 0 ;
         R.IntP.phaseStim.phaseshift = 0;
         R.IntP.compFx = @nullComp;
-        [~,~,feat_sim_base{1},xsim_gl,xsim_ip_base{1}] = computeSimData120319(R,m,uc_ip{1},Pbase,0);
+        [~,~,feat_sim_base{1},xsim_gl,xsim_ip_base{1}] = computeSimDataDRL(R,m,uc_ip{1},Pbase,0, external_stim_vector);
         
         % Work out the threshold
         R.IntP.phaseStim.eps = 0;
@@ -105,7 +114,7 @@ for CON =1:2
         
         Rpar.IntP.phaseStim.stimFx = stimFx;
         % Simulate with Stimulation
-        [~,~,feat_sim_stim{p},~,xsim_ip_stim{p},~]  = computeSimData120319(Rpar,m,uc_ip{1},Pbase,0);
+        [~,~,feat_sim_stim{p},~,xsim_ip_stim{p},~]  = computeSimDataDRL(Rpar,m,uc_ip{1},Pbase,0, external_stim_vector);
 
         uexs = load([Rpar.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
         pU{p} = uexs.uexs(Rpar.IntP.phaseStim.sensStm(2),round(Rpar.obs.brn*(1/R.IntP.dt))+1:end);
