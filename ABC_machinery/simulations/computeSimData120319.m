@@ -1,4 +1,5 @@
-function [r2,pnew,feat_sim,xsims,xsims_gl,wflag] = computeSimData120319(R,m,uc,pnew,simtime,plotop)
+function [r2,pnew,feat_sim,xsims,xsims_gl,wflag, varargout] = ...
+    computeSimData120319(R,m,uc,pnew,simtime,plotop)
 % outputs
 %   r2 - rsquared value between real and simulated features
 %   pnew - updated parameter structure
@@ -82,3 +83,10 @@ else
     xsims_gl{1} = NaN;
     feat_sim{1} = NaN;
 end
+
+%% hacky way of adding additional output
+
+if nargout > 6
+    varargout{1} = R;
+end
+

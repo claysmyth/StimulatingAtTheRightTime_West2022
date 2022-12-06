@@ -1,11 +1,12 @@
-function [xsims_c R wflag] = observe_data(xstore,m,p,R)
+function [xsims_c R wflag] = DRL_observe_data(xstore,m,p,R, tvecRel)
     wflag = 0;
 
 for condsel = 1:numel(R.condnames)
     xsims = xstore{condsel}(R.obs.outstates,:);
     % Delete burnin
-    if size(xsims,2) > 5*round(R.obs.brn*(1/R.IntP.dt))
-        xsims(:,1:round(R.obs.brn*(1/R.IntP.dt))) = [];
+    if size(xsims,2) > 1*round(R.obs.brn*(1/R.IntP.dt))
+        idxRemove = tvecRel < 0;
+        xsims(:, idxRemove) = [];
     else
         wflag = 1;
         xsims_c{condsel} = xsims;
@@ -17,9 +18,6 @@ for condsel = 1:numel(R.condnames)
         warning('Simulation contains NaNs!!!')
         return
     end
-    tvec_obs = R.IntP.tvec;
-    tvec_obs(:,1:round(R.obs.brn*(1/R.IntP.dt))) = [];
-    R.IntP.tvec_obs = tvec_obs;
     
     for i = 1:length(R.obs.gainmeth)
         switch R.obs.gainmeth{i}
@@ -32,20 +30,9 @@ for condsel = 1:numel(R.condnames)
                 LFF(eye(size(LFF))~=0) = LF;
                 xsims = LFF*xsims;
             case 'unitvar'
-                meanFull = [];
-                stdFull = [];
                 for j = 1:size(xsims,1)
-                    meanCurr = mean(xsims(j,:));
-                    stdCurr = std(xsims(j,:));
-                    xsims(j,:) = (xsims(j,:) - meanCurr)./ stdCurr;
-
-                    meanFull = [meanFull, meanCurr];
-                    stdFull = [stdFull, stdCurr];
+                    xsims(j,:) = (xsims(j,:) - R.DRL.chMean(j))./R.DRL.chStd(j);
                 end
-
-                R.DRL.chMean = meanFull;
-                R.DRL.chStd = stdFull;
-
             case 'unitvarConcat'
                 LM = [];
                 for C = 1:numel(xstore)

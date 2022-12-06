@@ -234,7 +234,7 @@ for condsel = 1:numel(R.condnames)
     end
     
     TOL = exp(-4);
-    for tstep = R.IntP.buffer:tStepEnd
+    for tstep = R.IntP.buffer:(tStepEnd-1)
         % assemble flow
         %==========================================================================
         N     = m;
