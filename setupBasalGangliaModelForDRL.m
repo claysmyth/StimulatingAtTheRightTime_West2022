@@ -35,7 +35,7 @@ fsamp = 1/R.IntP.dt;                                                        % co
 R.obs.SimOrd = floor(log2(fsamp/(2*R.obs.csd.df)));                         % order of NPD for simulated data, Dont Care
 R.IntP.tend = (N*(2^(R.obs.SimOrd)))/fsamp;                                 % length of recording in seconds             
 R.IntP.nt = R.IntP.tend/R.IntP.dt;                                          % number of time samples in the recording          
-R.IntP.tvec = linspace(0,R.IntP.tend,R.IntP.nt);                            % time stamp vector
+R.IntP.tvec = 0:R.IntP.dt:R.IntP.tend;                            % time stamp vector
 
 dfact = fsamp/(2*2^(R.obs.SimOrd));                                         % actual stimulation df (freq res)
 disp(sprintf('The target simulation df is %.2f Hz',R.obs.csd.df));
@@ -67,4 +67,10 @@ R.objfx.specspec = 'cross';  % include cross terms
 %% PLOTTING
 R.plot.outFeatFx = @npdplotter_110717; %%@;csdplotter_220517
 R.plot.save = 'False';
+
+%% DRL STIM PARAMS
+
+R.DRL.epLen = 1;                                                                % length of each sample/epoch in seconds
+R.DRL.nEpLen = R.DRL.epLen / R.IntP.dt;                                              % number of samples in each sample/epoch
+R.DRL.dsFs = 200;                                                               % desired sampling rate of downsampled signal in Hz
 

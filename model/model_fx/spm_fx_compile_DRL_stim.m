@@ -12,9 +12,9 @@ for condsel = 1:numel(R.condnames)
     cs = cs+1;
     us = uc{cs};
     try
-        uexs = uc{100}; % This is the external stimulation
+        uexs = uc{100}; % This is the external stimulation                  % if input is a cell array
     catch
-        uexs = zeros(size(us));
+        uexs = zeros(size(us));                                             % if input is just a matrix
     end
     p = pc;
     % Compiles NMM functions with delays, seperates intrinsic and extrinsic

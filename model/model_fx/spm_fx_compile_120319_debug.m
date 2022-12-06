@@ -1,4 +1,4 @@
-function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_120319_debug(R,x,uc,pc,m)
+function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_120319_debug(R,x,uc,pc,m, xComp, tStepEnd)
 
 if isfield(R.IntP,'getNoise') && R.IntP.getNoise == 1
     decon = 0;
@@ -227,16 +227,14 @@ for condsel = 1:numel(R.condnames)
     f = zeros(xinds(end),1); dt = R.IntP.dt;
     if iscell(x)
         xstore= full(repmat(spm_vec(x),1,R.IntP.buffer));                   % uninitalized if cell array
+        xint = xstore(m.n,1);
     else
         xstore = x;                                                         % initialized if a matrix
+        xint = xstore(:, end);
     end
-    % pad out the rest of xstore with zeros
-    %     xstore =    [xstore zeros(m.xinds(end),(R.IntP.nt+1)-size(xstore,2))];
     
-    %     xstore = [xstore nan(size(xstore,1),R.IntP.nt-R.IntP.buffer)];
-    xint = zeros(m.n,1);
     TOL = exp(-4);
-    for tstep = R.IntP.buffer:R.IntP.nt
+    for tstep = R.IntP.buffer:tStepEnd
         % assemble flow
         %==========================================================================
         N     = m;
@@ -266,19 +264,8 @@ for condsel = 1:numel(R.condnames)
         end
         xint = xint + (f.*dt);
         xstore = [xstore xint]; % This is done for speed reasons! Faster than indexing (!!)
-        if any(isnan(xint))
-            a = 1;
-        end
-        if tstep >R.IntP.buffer*10
-            if any(xint>1e8) || any(isnan(xint))
-                wflag= 1;
-                break
-            end
-            pp1 = 1;
-        end
-        % disp(tstep/R.IntP.nt)
-        % xint= spm_unvec(x,M.x);
     end
+
     if wflag == 1
         xstore_cond{condsel} = NaN;
     end

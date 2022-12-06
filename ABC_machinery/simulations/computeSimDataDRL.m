@@ -6,23 +6,39 @@ function [r2,pnew,feat_sim,xsims,xsims_gl,wflag] = computeSimDataDRL(R,m,uc,pnew
 %   xsims - simulated dynamics (18, N)
 %   xsims_gl - simulated local field potentials with right gain values
 
-if nargin<6
-    plotop = 0;
+%% Input parsing
+% pass in optional flags
+
+% Handle the optional inputs
+p = inputParser;
+p.KeepUnmatched = true;
+
+addParameter(p, 'exStimVec', 0, ...
+    @(x) validateattributes(x, {'double'}, {'nonempty'}));
+
+parse(p,varargin{:});
+
+% Handles incorrect inputs
+UnmatchedParam = fieldnames(p.Unmatched);
+if ~isempty(UnmatchedParam)
+    error(['"',UnmatchedParam{1},'" is not a valid parameter.']);
 end
+
+% unpacking variable
+exStimVec = p.Results.exStimVec;
+
+% if start from non-zero initial time
 if simtime ~= 0
     R = setSimTime(R,simtime);
     uc = innovate_timeseries(R,m);
     uc{1} = uc{1}.*sqrt(R.IntP.dt);
 end
 
-if length(varargin) == 1
-    external_stim_vector = varargin{1};
-end
 
 %% Simulate New Data
 % Integrate in time master fx function
 try
-    [xsims dum wflag] = R.IntP.intFx(R,m.x,uc,pnew,m, external_stim_vector);
+    [xsims dum wflag] = R.IntP.intFx(R,m.x,uc,pnew,m, exStimVec);
 catch
     disp('Simulation failed!')
     xsims{1} = nan(1,3);

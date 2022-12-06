@@ -13,4 +13,12 @@ R.obs.obsstates = [1:6]; % All 6 nodes are observed
 R.chloc_name = R.chsim_name; % Ensure sim names match to output names
 R.obs.gainmeth = {'unitvar'};
 
+%% copy all DRL related params
+
+R.DRL = Rorg.DRL;
+
+% also recompute time vector since original time vector missing one sample
+R.IntP.tvec = 0:R.IntP.dt:R.IntP.tend;
+
+
 end
