@@ -1,4 +1,4 @@
-function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_120319_debug(R,x,uc,pc,m, xComp, tStepEnd)
+function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_120319_wStepEnd(R,x,uc,pc,m, tStepEnd)
 
 if isfield(R.IntP,'getNoise') && R.IntP.getNoise == 1
     decon = 0;

@@ -5,14 +5,19 @@ for condsel = 1:numel(R.condnames)
     xsims = xstore{condsel}(R.obs.outstates,:);
     % Delete burnin
     if size(xsims,2) > 1*round(R.obs.brn*(1/R.IntP.dt))
-        idxRemove = tvecRel < 0;
-        xsims(:, idxRemove) = [];
+        if numel(tvecRel) > 0
+            idxRemove = tvecRel < 0;
+            xsims(:, idxRemove) = [];
+        else
+            warning('Debug mode: not removing brnIn period');
+        end
     else
         wflag = 1;
         xsims_c{condsel} = xsims;
         warning('Simulation is shorter than burn length!!!')
         return
     end
+
     if any(isnan(xsims(:)))
         xsims_c{condsel} = xsims;
         warning('Simulation contains NaNs!!!')
