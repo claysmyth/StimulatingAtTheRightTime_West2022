@@ -1,4 +1,4 @@
-function DRL_resim_wUOnly(X, Rorg, m, p)
+function X_resim = DRL_resim_wUOnly(X, Rorg, m, p)
 % resimulate state in the absence of external input
 % for debugging purposes
 
@@ -34,6 +34,8 @@ for condsel = 1:numel(R.condnames)
 %             X_cond.xsims.S{i}];
 %     end
 %     vec_xsims_glComp = X_cond.xsims_gl.S;
+%     vec_xsims_SPrevComp = X_cond.xsims.SPrev;
+%     vec_xsims_SComp = X_cond.xsims.S;
 
     % now initialize parallelized for loop
     parfor i = 1:numEpoch
@@ -54,21 +56,42 @@ for condsel = 1:numel(R.condnames)
             m_i, uFull_i, p_i, tStepEnd_i, tvecRel_i);
 
         % append to outer array
-        xsims_resim{i} = xsims_resim_i{condsel};
-        xsims_gl_resim{i} = xsims_gl_resim_i{condsel};
+        xsims_resim_Cond{i} = xsims_resim_i{condsel};
+        xsims_gl_resim_Cond{i} = xsims_gl_resim_i{condsel};
     end
 
     % perform quick epoching in resimulated state
-    x1 = 1;
+    idxSPrev = [zeros(size(X_cond.xsims.tvec_Buffer{1})), ...
+        ones(size(X_cond.xsims.tvec_SPrev{1})), ...
+        zeros(size(X_cond.xsims.tvec_S{1}))];
+    idxS = [zeros(size(X_cond.xsims.tvec_Buffer{1})), ...
+        zeros(size(X_cond.xsims.tvec_SPrev{1})), ...
+        ones(size(X_cond.xsims.tvec_S{1}))];
+    for i = 1:numEpoch
+        xsims_resim_Cond_SPrev{i} = xsims_resim_Cond{i}(:, logical(idxSPrev));
+        xsims_resim_Cond_S{i} = xsims_resim_Cond{i}(:, logical(idxS));
+    end
+
+    % append to output structure
+    X_resim_Cond.xsims.SPrev = xsims_resim_Cond_SPrev;
+    X_resim_Cond.xsims.S = xsims_resim_Cond_S;
+    X_resim_Cond.xsims_gl.S = xsims_gl_resim_Cond;
+
+    X_resim{condsel} = X_resim_Cond;
 
 %     % now test equality for debugging purposes
 %     for i = 1:numEpoch
 %         try
-%             assert(allclose(xsims_resim{i}, vec_xsimsComp{i}));
-%             assert(allclose(xsims_gl_resim{i}, vec_xsims_glComp{i}));
+%             assert(allclose(xsims_resim_Cond{i}, vec_xsimsComp{i}));
+%             assert(allclose(xsims_gl_resim_Cond{i}, vec_xsims_glComp{i}));
 %         catch
 %             t1 = 1;
 %         end
+%     end
+% 
+%     for i = 1:numEpoch
+%         assert(allclose(xsims_resim_Cond_SPrev{i}, vec_xsims_SPrevComp{i}));
+%         assert(allclose(xsims_resim_Cond_S{i}, vec_xsims_SComp{i}));
 %     end
 
 end
