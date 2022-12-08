@@ -256,7 +256,7 @@ for condsel = 1:numel(R.condnames)
         %% Stim set
         if tstep >((R.obs.brn)/dt) && (rem(tstep,R.IntP.phaseStim.upperiod/dt) == 0)
             if R.IntP.phaseStim.switch
-                if R.IntP.stimtype == 'external'
+                if strcmp(R.IntP.stimtype, 'external')
                     [uexs,R] = R.IntP.phaseStim.stimFx(uexs,R,tstep,xstore,dt,std(us(:,R.IntP.phaseStim.sensStm(2))), varargin{1});
                 else
                     [uexs,R] = R.IntP.phaseStim.stimFx(uexs,R,tstep,xstore,dt,std(us(:,R.IntP.phaseStim.sensStm(2))));

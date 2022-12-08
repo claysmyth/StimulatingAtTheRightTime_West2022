@@ -1,4 +1,5 @@
-function [uexs,R,phi] = zeroCrossingPhaseStim_v3(uexs,R,tstep,xstore,dt,uvar,phi,demo)
+function [uexs,R,phi] = zeroCrossingPhaseStim_v3(...
+    uexs,R,tstep,xstore,dt,uvar,phi,demo)
 % This function simulates the phase dependent simulation that simulates at 
 % times of zerocrossing of the current phase
 %

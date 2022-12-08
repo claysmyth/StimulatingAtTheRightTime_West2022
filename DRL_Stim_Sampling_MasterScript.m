@@ -29,5 +29,10 @@ timeEpoch = toc;
 
 %% next test with simulation
 
+% run simulation with fixed seed to figure out eps
+[eps, ~] = estimateEps(R);
+R.IntP.phaseStim.eps = eps;
 
+% now run simulation with actual stim
+R = DRL_sim_bufferStim(R, m, p);
 
