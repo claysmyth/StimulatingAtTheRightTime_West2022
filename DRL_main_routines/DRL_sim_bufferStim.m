@@ -1,4 +1,4 @@
-function [R] = DRL_sim_bufferStim(X, Rorg, morg, porg, varargin)
+function [X_stim, A, R] = DRL_sim_bufferStim(X, Rorg, morg, porg, varargin)
 % In current iteration, varargin is an optional parameter for passing in 
 % an external stimulation vector. Size(varargin) = 1.
 
@@ -8,7 +8,7 @@ function [R] = DRL_sim_bufferStim(X, Rorg, morg, porg, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 
-addParameter(p, 'external_stim_vector', {});                                % optional handle for passing in external stim
+addParameter(p, 'exStimStruct', {});                                % optional handle for passing in external stim
 
 addParameter(p, 'stimlength', 15, ...                                       % length of stimulation
     @(x) validateattributes(x, {'double'}, {'nonempty'}));
@@ -19,7 +19,19 @@ addParameter(p, 'upperiod', 15, ...                                       % leng
 addParameter(p, 'SScomb', 1, ...                                            % stimulation type
     @(x) validateattributes(x, {'double'}, {'nonempty'}));
 
-addParameter(p, 'stimAmp', 1e2, ...                                         % stimulation amplitude
+addParameter(p, 'stimAmp', 1e3, ...                                         % stimulation amplitude
+    @(x) validateattributes(x, {'double'}, {'nonempty'}));
+
+addParameter(p, 'minNPart', 2, ...                                         % stimulation amplitude
+    @(x) validateattributes(x, {'double'}, {'nonempty'}));
+
+addParameter(p, 'maxNPart', 8, ...                                         % stimulation amplitude
+    @(x) validateattributes(x, {'double'}, {'nonempty'}));
+
+addParameter(p, 'minLenPart', 0.1, ...                                         % stimulation amplitude
+    @(x) validateattributes(x, {'double'}, {'nonempty'}));
+
+addParameter(p, 'ampScaleFactor', [0.9, 1.1], ...                                         % stimulation amplitude
     @(x) validateattributes(x, {'double'}, {'nonempty'}));
 
 parse(p,varargin{:});
@@ -31,11 +43,19 @@ if ~isempty(UnmatchedParam)
 end
 
 % unpacking variable
-external_stim_vector = p.Results.external_stim_vector;
+exStimStruct = p.Results.exStimStruct;
 stimlength = p.Results.stimlength;
 upperiod = p.Results.upperiod;
 SScomb = p.Results.SScomb;
 stimAmp = p.Results.stimAmp;
+
+minNPart = p.Results.minNPart;
+maxNPart = p.Results.maxNPart;
+minLenPart = p.Results.minLenPart;
+ampScaleFactor = p.Results.ampScaleFactor;
+
+% convert from seconds to samples
+minLenPart = fix(minLenPart / Rorg.IntP.dt);
 
 %% Load in the model
 
@@ -45,9 +65,10 @@ for i = 1 % These are the different stim types
     %% Define stimulation conditions
     if SScomb == 1
         % Stimulating  STN - STN cDBS- DC modulation
-        senssite = 1; % M2
-        stimsite = 4; % STN
-        R.IntP.phaseStim.stimFx = @dcStim_v1;
+        senssite = 4;
+        stimsite = 1;
+        R.IntP.phaseStim.stimFx = @dcStimDRL_v1;
+
         % phflag = 0;
         R = typeIstimPars_v3(R);
         R.IntP.phaseStim.stimAmp = stimAmp; % 1e4;%
@@ -56,8 +77,8 @@ for i = 1 % These are the different stim types
     
     elseif SScomb == 2
         % Stimulating  STN - STN DBS with random DC modulation
-        senssite = 1; % M2
-        stimsite = 4; % STN
+        senssite = 4;
+        stimsite = 1;
         R.IntP.phaseStim.stimFx = @getRandomStimulationAction;
         % phflag = 0;
         R = typeIstimPars_v3(R);
@@ -68,8 +89,8 @@ for i = 1 % These are the different stim types
     elseif SScomb == 3
         % Stimulating STN - STN DBS with externally (e.g. DRL output) 
         % determined stim vector
-        senssite = 1; % M2
-        stimsite = 4; % STN
+        senssite = 4;
+        stimsite = 1;
         R.IntP.phaseStim.stimFx = @passExternalStimVector;               % External stim vector
         
         R = typeIstimPars_v3(R);
@@ -77,12 +98,11 @@ for i = 1 % These are the different stim types
         R.IntP.phaseStim.upperiod = upperiod;%
         R.IntP.stimtype = 'external';
         R.IntP.phaseStim.stimlength = stimlength;% 
-        R.IntP.phaseStim.externalStim = external_stim_vector;
     end
 end
 
 R.IntP.phaseStim.sensStm = [senssite stimsite];
-Rorg = deepCopyStruct(R, 1);
+R.IntP.phaseStim.eps = Rorg.IntP.phaseStim.eps;
 
 %% Reset some flags for simulation
 
@@ -110,106 +130,133 @@ for condsel = 1:numel(R.condnames)
 
     % next generate numEpoch copies of R, m and p
     vecR = deepCopyStruct(R, numEpoch);
-    vec_m = deepCopyStruct(m, numEpoch);
-    vec_p = deepCopyStruct(p, numEpoch);
+    vec_m = deepCopyStruct(morg, numEpoch);
+    vec_p = deepCopyStruct(porg, numEpoch);
+    
+    % unpack external stim struct in the case of external stim
+    if isequal(R.IntP.phaseStim.stimFx, @passExternalStimVector)
+        A_cond = exStimStruct{condsel};
+    end
 
     % further unpack for parfor
     for i = 1:numEpoch
+        % unpack metadata structure
+        R_i = vecR{i};
+        p_i = vec_p{i};
+        m_i = vec_m{i};
+    
+        % form necessary variables
         vecUFull{i} = {[X_cond.u.Buffer{i}; X_cond.u.SPrev{i}; ...
             X_cond.u.S{i}]};
         tvecRel_temp = [X_cond.xsims_gl.tvec_Buffer{i}, ...
             X_cond.xsims_gl.tvec_SPrev{i}, X_cond.xsims_gl.tvec_S{i}];
         vec_tvecRel{i} = tvecRel_temp - X_cond.xsims_gl.tvec_S{i}(1);
+        
+        % normalize the intrinsic noise first 
+        % (note a single epoch)
+        us = vecUFull{i}{1};
+        for j = 1:m_i.m
+            C    = exp(p_i.C(j));
+            us(:,j) = C*us(:,j).*0.01;
+            % uexs(:,j) = C*uexs(:,i)*0.01;
+        end
+        uvar = std(us(:,R_i.IntP.phaseStim.sensStm(2)));
+        assert(uvar ~= 0)
+        
+        % make the stim variables
+        if R_i.IntP.phaseStim.switch
+            % make actual stim pattern
+            if isequal(R_i.IntP.phaseStim.stimFx, @dcStimDRL_v1)
+                [uexsS_i, R_i] = R_i.IntP.phaseStim.stimFx(R_i, R_i.IntP.phaseStim.stimAmp, ...
+                    size(X_cond.u.S{i}), uvar);
+            elseif isequal(R_i.IntP.phaseStim.stimFx, @getRandomStimulationAction)
+                [uexsS_i, R_i] = R_i.IntP.phaseStim.stimFx(R_i, ...
+                    R_i.IntP.phaseStim.stimAmp, size(X_cond.u.S{i}), ...
+                    uvar, minNPart, maxNPart, minLenPart, ampScaleFactor);
+            elseif isequal(R_i.IntP.phaseStim.stimFx, ...
+                    @passExternalStimVector)
+                A_i = A_cond.uexs.S{i};
+                [uexsS_i, R_i] = R_i.IntP.phaseStim.stimFx(R_i, ...
+                    R_i.IntP.phaseStim.stimAmp, size(X_cond.u.S{i}), ...
+                    uvar, A_i);
+            end
+
+            % make the stim pattern in the burn in period
+            [uexsSPrev_i, ~] = dcStimDRL_v1(R_i, R_i.IntP.phaseStim.stimAmp, ...
+                size(X_cond.u.SPrev{i}), uvar);
+            if ~isequal(R_i.IntP.phaseStim.stimFx, @dcStimDRL_v1)
+                bufferLength = fix(minLenPart * 5);
+                SPrevLength = size(uexsSPrev_i, 1);
+                svEnd = (SPrevLength - bufferLength):SPrevLength;
+                ramp = linspace(uexsSPrev_i(end, R.IntP.phaseStim.sensStm(2)), ...
+                    uexsS_i(1, R.IntP.phaseStim.sensStm(2)), numel(svEnd));
+                uexsSPrev_i(svEnd, R.IntP.phaseStim.sensStm(2)) = ramp;
+            end
+            uexsBuff_i = zeros(size(X_cond.u.Buffer{i}));
+
+            uexsFull_i = {[uexsBuff_i; uexsSPrev_i; uexsS_i]};
+        else
+            uexsFull_i = zeros(size(us));
+        end
+        uexsFull_Cond{i} = uexsFull_i;
+        uexsS_Cond{i} = uexsS_i / uvar;
+
     end
     xsimsBuff = X_cond.xsims.Buffer;
+
+    % form arrays for debugging
+    % TODO: remove
+    vec_xsims_glComp = X_cond.xsims_gl.S;
+    vec_xsims_SPrevComp = X_cond.xsims.SPrev;
     
     % now initialize the parallelized for loop
-    for i = 1:numEpoch
+    parfor i = 1:numEpoch
         % unpack meta structure
         R_i = vecR{i};
         m_i = vec_m{i};
         p_i = vec_p{i};
 
         % form arrays necessary for resimulation
-        uFull_i = vecUFull{i};                                              % full intrinsic noise
+        uFull_i = vecUFull{i};
         xsimsBuff_i = xsimsBuff{i};                                         % initial states for simulation
         tStepEnd_i = size(uFull_i{1}, 1);                                   % end time step for simulation
         tvecRel_i = vec_tvecRel{i};
-        
-        % re-run simulation
-        [xsims_stim, xsim_gl_stim] = ...
-            computeSimDataDRL_wUOnly(R_i, xsimsBuff_i, ...
-            m_i, uFull_i, p_i, tStepEnd_i, tvecRel_i);
+        uexsFull_i = uexsFull_Cond{i};
+
+        % re-run simulation w/ DBS Stim
+        [xsims_stim_i, xsim_gl_stim_i] = ...
+            computeSimDataDRL(R_i, xsimsBuff_i, m_i, uFull_i, uexsFull_i, ...
+            p_i, tStepEnd_i, tvecRel_i);
 
         % append to outer array
-        t1 = 1;
-
-
+        xsims_stim_Cond{i} = xsims_stim_i{condsel};
+        xsims_gl_stim_Cond{i} = xsim_gl_stim_i{condsel};
     end
 
-end
-
-% obtain number of epochs and make copy of hyper structure
-
-
-%% Loop through Connections
-for CON =1:2
-    feat_sim_save = {};
-    xsim_ip = {};
-    for state = 1:size(ck_1,2)
-        %% Setup Base Model
-        Pbase = XBase;
-        if CON == 1 % Hyperdirect
-            Pbase.A{1}(4,1) = log(exp(Pbase.A{1}(4,1))*ck_1(CON,state)); %
-        elseif CON == 2 % Pallidal-subthalamo
-            Pbase.A{2}(4,3) = log(exp(Pbase.A{2}(4,3))*ck_1(CON,state)); %
-        end
-        
-        % Simulate Base Model
-        uc_ip{1} = uc;
-        R.IntP.phaseStim.switch = 0 ;
-        R.IntP.phaseStim.phaseshift = 0;
-        R.IntP.compFx = @nullComp;
-        [~,~,feat_sim_base{1},xsim_gl,xsim_ip_base{1}] = computeSimDataDRL(R,m,uc_ip{1},Pbase,0, external_stim_vector);
-        
-        % Work out the threshold
-        R.IntP.phaseStim.eps = 0;
-        [~,R] = zeroCrossingPhaseStim_v3([],R,0,xsim_gl{1},R.IntP.dt);
-        eps(state) =  R.IntP.phaseStim.eps;
-        
-        %% Do Stimulation
-        R.IntP.phaseStim.switch = 1;
-        xsim_ip_stim = cell(1,12); feat_sim_stim = cell(1,12); pU = cell(1,12);
-        
-        Rpar = R;
-
-        % Modulate the phase (setting to 0 in this case)
-        Rpar.IntP.phaseStim.phaseshift = phaseShift;
-        
-        Rpar.IntP.phaseStim.stimFx = stimFx;
-        % Simulate with Stimulation
-        [~,~,feat_sim_stim{p},~,xsim_ip_stim{p},~]  = computeSimDataDRL(Rpar,m,uc_ip{1},Pbase,0, external_stim_vector);
-
-        uexs = load([Rpar.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*Rpar.IntP.phaseStim.phaseshift)],'uexs');
-        pU{p} = uexs.uexs(Rpar.IntP.phaseStim.sensStm(2),round(Rpar.obs.brn*(1/R.IntP.dt))+1:end);
-        disp([CON state p])
-        
-        rmdir([R.rootn 'data/phaseStimSave/'],'s')
-        % Create save version
-        feat_sim_save{1,state} = feat_sim_base; feat_sim_save{2,state} = feat_sim_stim;
-        xsim_ip{1,state} = xsim_ip_base; xsim_ip{2,state} = xsim_ip_stim;
-        pU_save{state} = pU;
-        
+    % perform quick epoching in resimulated state
+    idxSPrev = [zeros(size(X_cond.xsims.tvec_Buffer{1})), ...
+        ones(size(X_cond.xsims.tvec_SPrev{1})), ...
+        zeros(size(X_cond.xsims.tvec_S{1}))];
+    idxS = [zeros(size(X_cond.xsims.tvec_Buffer{1})), ...
+        zeros(size(X_cond.xsims.tvec_SPrev{1})), ...
+        ones(size(X_cond.xsims.tvec_S{1}))];
+    for i = 1:numEpoch
+        xsims_stim_Cond_SPrev{i} = xsims_stim_Cond{i}(:, logical(idxSPrev));
+        xsims_stim_Cond_S{i} = xsims_stim_Cond{i}(:, logical(idxS));
     end
-    %         Rorg.out.tag = 'tester';
 
-    % TODO: DECIDE HOW TO SAVE NEW STIM+SIM DATA
-    rootan = [Rorg.rootn 'data/<FileNameHere>'];
-    mkdir(rootan)
-    
-    save([rootan '/DRL_' Rorg.out.tag '_rerun_sim_with_stim_' num2str(CON) '_feat' num2str(SScomb) '.mat'],'feat_sim_save')
-    save([rootan '/DRL_' Rorg.out.tag '_rerun_sim_with_stim_' num2str(CON) '_xsim' num2str(SScomb) '.mat'],'xsim_ip','-v7.3')
-    save([rootan '/DRL_' Rorg.out.tag '_rerun_sim_with_stim_' num2str(CON) '_Rout' num2str(SScomb) '.mat'],'R')
-    save([rootan '/DRL_' Rorg.out.tag '_rerun_sim_with_stim_' num2str(CON) '_pU_save' num2str(SScomb) '.mat'],'pU_save')
+    % append to output structure for next state
+    X_stim_Cond.xsims.SPrev = xsims_stim_Cond_SPrev;
+    X_stim_Cond.xsims.S = xsims_stim_Cond_S;
+    X_stim_Cond.xsims_gl.S = xsims_gl_stim_Cond;
+
+    X_stim{condsel} = X_stim_Cond;
+
+    % append to outer structure for action
+    A_Cond.uexs.S = uexsS_Cond;
+    A_Cond.uexs.Full = uexsS_Cond;
+
+    A{condsel} = A_Cond;
+
 end
-disp(SScomb)
+end

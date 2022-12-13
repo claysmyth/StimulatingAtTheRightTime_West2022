@@ -1,21 +1,22 @@
-function [uexs,R,phi] = passExternalStimVector(uexs,R,tstep,xstore,dt,uvar,phi, external_stim_vector)
-if (tstep+fix(R.IntP.phaseStim.stimlength/dt))<size(uexs,1) || tstep==0
+function [uexs,R] = passExternalStimVector(R, stimAmp, stimSize, uvar, A_i)
+% generate the entire stim sequence for DRL simulations 
+% input
+%   -R: struct storing all hyperparameter
+%   -stimAmp: desired stimulation amplitude
+%   -stimSize: desired shape of stimulation
+%   -uvar: normalization constant?
 
-    
-    % BEnv = smooth(abs(BUB),200); %abs(HB); %smooth(abs(HB),100);
-    if R.IntP.phaseStim.eps == 0
-        R.IntP.phaseStim.eps = nan;
-        return
-    end
-    
-    %  ts = 0:dt:3;
-    %A = (R.IntP.phaseStim.stimAmp*uvar); % setup the amplitude of the stim
-    off = 0; %uexs(tstep+fix(R.IntP.phaseStim.stimlength/dt),R.IntP.phaseStim.sensStm(2)) == 0;
-    
-    if  ~off; % && gate
-        %sv = tstep:tstep+fix(R.IntP.phaseStim.stimlength/dt);
-        sv = tstep:tstep+size(external_stim_vector);
-        uexs(sv,R.IntP.phaseStim.sensStm(2)) = external_stim_vector;
-        phi(sv,R.IntP.phaseStim.sensStm(2)) = 0;
-    end
+
+% Sanity check: if threshold is not set yet then return NaN
+if R.IntP.phaseStim.eps == 0
+    R.IntP.phaseStim.eps = nan;
+    return
+end
+
+% also double check the shape of stimulation
+assert(all(size(A_i) == stimSize))
+
+% scale the external input
+uexs = A_i * uvar;
+
 end

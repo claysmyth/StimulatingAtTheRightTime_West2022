@@ -10,15 +10,15 @@ porg = p;
 
 % fake stim parameters
 % Stimulating  STN - STN cDBS- DC modulation
-senssite = 1; % M2
-stimsite = 4; % STN
+% R.IntP.phaseStim.stimFx = @dcStim_v1;
+senssite = 4; % M2
+stimsite = 1; % STN
 R = typeIstimPars_v3(R);
-R.IntP.phaseStim.stimAmp = 1e2; % 1e4;%
-R.IntP.phaseStim.upperiod = 15;%
-R.IntP.phaseStim.stimlength = 15;%
+% R.IntP.phaseStim.stimAmp = 1e2; % 1e4;%
+% R.IntP.phaseStim.upperiod = 15;%
+% R.IntP.phaseStim.stimlength = 15;%
 
-% Setup stim parameterss
-R = typeIstimPars_v3(R);
+% Setup stim parameters
 R.IntP.phaseStim.sensStm = [senssite stimsite];
 
 %% settting model params

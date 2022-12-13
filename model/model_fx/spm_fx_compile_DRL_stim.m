@@ -1,4 +1,5 @@
-function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_DRL_stim(R,x,uc,pc,m,varargin)
+function [xstore_cond,tvec,wflag,J,Es] = ...
+    spm_fx_compile_DRL_stim(R,x,uc,uexc,pc,m,tStepEnd)
 
 if isfield(R.IntP,'getNoise') && R.IntP.getNoise == 1
     decon = 0;
@@ -11,11 +12,7 @@ wflag= 0; tvec = [];
 for condsel = 1:numel(R.condnames)
     cs = cs+1;
     us = uc{cs};
-    try
-        uexs = uc{100}; % This is the external stimulation                  % if input is a cell array
-    catch
-        uexs = zeros(size(us));                                             % if input is just a matrix
-    end
+    uexs = uexc{cs};
     p = pc;
     % Compiles NMM functions with delays, seperates intrinsic and extrinsic
     % dynamics then summates
@@ -217,13 +214,14 @@ for condsel = 1:numel(R.condnames)
     f = zeros(xinds(end),1); dt = R.IntP.dt;
     if iscell(x)
         xstore= full(repmat(spm_vec(x),1,R.IntP.buffer));
+        xint = xstore(m.n,1);
     else
         xstore = x;
+        xint = xstore(:, end);
     end
     
-    xint = zeros(m.n,1);
     TOL = exp(-4);
-    for tstep = R.IntP.buffer:R.IntP.nt
+    for tstep = R.IntP.buffer:(tStepEnd - 1)
         % assemble flow
         %==========================================================================
         N     = m;
@@ -235,11 +233,7 @@ for condsel = 1:numel(R.condnames)
                 for k = 1:numel(p.A) % connection type
                     if abs(A{k}(i,j)) > TOL
                         xD = xstore(Ds(i,j),tstep-D(i,j));
-                        if j == 4 && R.IntP.phaseStim.switch
-                            fA = [fA  A{k}(i,j)*sigmoidin(xD,Rz(j),B(j))]; % 1st Rz is slope!
-                        else
-                            fA = [fA  A{k}(i,j)*sigmoidin(xD,Rz(j),B(j))]; % 1st Rz is slope!
-                        end
+                        fA = [fA  A{k}(i,j)*sigmoidin(xD,Rz(j),B(j))]; % 1st Rz is slope!
                     end
                 end
             end
@@ -253,32 +247,14 @@ for condsel = 1:numel(R.condnames)
         xint = xint + (f.*dt);
         xstore = [xstore xint]; % This is done for speed reasons! Faster than indexing (!!)
         
-        %% Stim set
-        if tstep >((R.obs.brn)/dt) && (rem(tstep,R.IntP.phaseStim.upperiod/dt) == 0)
-            if R.IntP.phaseStim.switch
-                if strcmp(R.IntP.stimtype, 'external')
-                    [uexs,R] = R.IntP.phaseStim.stimFx(uexs,R,tstep,xstore,dt,std(us(:,R.IntP.phaseStim.sensStm(2))), varargin{1});
-                else
-                    [uexs,R] = R.IntP.phaseStim.stimFx(uexs,R,tstep,xstore,dt,std(us(:,R.IntP.phaseStim.sensStm(2))));
-                end
-                
-                % for stim mods in which pars can be changed
-                if isfield(R.IntP.phaseStim,'parMod')
-                    B(R.IntP.phaseStim.sensStm(2)) = 4;
-                end
-            end
-        end
-        
         if any(xint>1e8) || any(isnan(xint))
             wflag= 1;
             break
         end
     end
-    uexs = uexs(1:tstep,:)';
+    % uexs = uexs(1:tstep,:)';
 end
 
-mkdir([R.rootn 'data/phaseStimSave/'])
-save([R.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*R.IntP.phaseStim.phaseshift)],'uexs')
 if wflag == 1
     xstore_cond{condsel} = NaN;
 end
