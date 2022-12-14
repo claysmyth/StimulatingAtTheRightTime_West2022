@@ -78,7 +78,7 @@ R.DRL.dsFs = 200;                                                           % de
 U = char(java.lang.System.getProperty('user.name'));
 switch U
     case 'jyao'
-        R.DRL.outPath = fullfile('~', 'local', 'data', 'starrlab', 'DRL');
+        R.DRL.outPath = fullfile('/home', 'jyao', 'local', 'data', 'starrlab', 'DRL');
         if ~exist(R.DRL.outPath, 'dir')
             mkdir(R.DRL.outPath);
         end
