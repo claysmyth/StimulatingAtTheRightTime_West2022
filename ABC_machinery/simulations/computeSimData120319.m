@@ -1,5 +1,5 @@
 function [r2,pnew,feat_sim,xsims,xsims_gl,wflag, varargout] = ...
-    computeSimData120319(R,m,uc,pnew,simtime,plotop)
+    computeSimData120319(R,m,uc,pnew,simtime,plotop, varargin)
 % outputs
 %   r2 - rsquared value between real and simulated features
 %   pnew - updated parameter structure
@@ -10,6 +10,13 @@ function [r2,pnew,feat_sim,xsims,xsims_gl,wflag, varargout] = ...
 if nargin<6
     plotop = 0;
 end
+
+if nargin == 7
+    saveFlag = varargin{1};
+else
+    saveFlag = 1;
+end
+
 if simtime ~= 0
     R = setSimTime(R,simtime);
     uc = innovate_timeseries(R,m);
@@ -19,7 +26,11 @@ end
 %% Simulate New Data
 % Integrate in time master fx function
 try
-    [xsims dum wflag] = R.IntP.intFx(R,m.x,uc,pnew,m);
+    if nargin == 7
+        [xsims dum wflag] = R.IntP.intFx(R,m.x,uc,pnew,m, saveFlag);
+    else
+        [xsims dum wflag] = R.IntP.intFx(R,m.x,uc,pnew,m);
+    end
 catch
     disp('Simulation failed!')
     xsims{1} = nan(1,3);

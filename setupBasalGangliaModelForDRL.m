@@ -70,7 +70,23 @@ R.plot.save = 'False';
 
 %% DRL STIM PARAMS
 
-R.DRL.epLen = 1;                                                                % length of each sample/epoch in seconds
-R.DRL.nEpLen = R.DRL.epLen / R.IntP.dt;                                              % number of samples in each sample/epoch
-R.DRL.dsFs = 200;                                                               % desired sampling rate of downsampled signal in Hz
+R.DRL.epLen = 1;                                                            % length of each sample/epoch in seconds
+R.DRL.nEpLen = R.DRL.epLen / R.IntP.dt;                                     % number of samples in each sample/epoch
+R.DRL.dsFs = 200;                                                           % desired sampling rate of downsampled signal in Hz
 
+% set output path
+U = char(java.lang.System.getProperty('user.name'));
+switch U
+    case jyao
+        R.DRL.outPath = fullfile('~', 'local', 'data', 'starrlab', 'DRL');
+        if ~exist(R.DRL.outPath, 'dir')
+            mkdir(R.DRL.outPath);
+        end
+
+    otherwise
+        error("need ot specify output path for saving data")
+
+end
+
+% sanity check
+assert(isfield(R.DRL, 'outPath'));

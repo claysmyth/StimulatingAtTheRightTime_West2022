@@ -51,7 +51,7 @@ R.IntP.phaseStim.switch = 0 ;
 R.IntP.phaseStim.phaseshift = 0;
 R.IntP.compFx = @nullComp;
 [~,~,~,xsim_gl,~] = ...
-    computeSimData120319(R,m,uc_ip{1},Pbase,0);
+    computeSimData120319(R,m,uc_ip{1},Pbase,0, 0, 0);
 
 % Work out the threshold
 R.IntP.phaseStim.eps = 0;

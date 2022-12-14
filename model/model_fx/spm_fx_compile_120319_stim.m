@@ -1,9 +1,15 @@
-function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_120319_stim(R,x,uc,pc,m)
+function [xstore_cond,tvec,wflag,J,Es] = spm_fx_compile_120319_stim(R,x,uc,pc,m, varargin)
 
 if isfield(R.IntP,'getNoise') && R.IntP.getNoise == 1
     decon = 0;
 else
     decon = 1;
+end
+
+if nargin == 6
+    saveFlag = varargin{1};
+else
+    saveFlag = 1;
 end
 
 cs = 0; % cond counter
@@ -273,8 +279,11 @@ for condsel = 1:numel(R.condnames)
     uexs = uexs(1:tstep,:)';
 end
 
-mkdir([R.rootn 'data/phaseStimSave/'])
-save([R.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*R.IntP.phaseStim.phaseshift)],'uexs')
+if saveFlag
+    mkdir([R.rootn 'data/phaseStimSave/'])
+    save([R.rootn 'data/phaseStimSave/stim_tmp_' sprintf('%3.f',1000*R.IntP.phaseStim.phaseshift)],'uexs')
+end
+
 if wflag == 1
     xstore_cond{condsel} = NaN;
 end

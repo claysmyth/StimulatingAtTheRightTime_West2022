@@ -11,6 +11,21 @@ for condsel = 1:numel(R.condnames)
     assert(size(xsims_gl{condsel}, 2) == size(tvecObs, 2))
     assert(size(u{condsel}, 1) == size(tvecU, 2))
 
+    % compute beta burst statistics
+    fs = fix(1/R.IntP.dt);
+    bpFilt_Beta1 = designfilt('bandpassfir','FilterOrder', fix(fs / 10), ...
+        'CutoffFrequency1', 13,'CutoffFrequency2', 20, ...
+         'SampleRate', fs);
+    bpFilt_Beta2 = designfilt('bandpassfir','FilterOrder', fix(fs / 10), ...
+        'CutoffFrequency1', 20,'CutoffFrequency2', 30, ...
+         'SampleRate', fs);
+
+    % filter, hilbert and get amp
+    xsims_gl_beta1_cond = abs(hilbert(filtfilt(bpFilt_Beta1, xsims_gl{condsel}')))';
+    xsims_gl_beta2_cond = abs(hilbert(filtfilt(bpFilt_Beta2, xsims_gl{condsel}')))';
+    xsims_gl_beta_cond = (xsims_gl_beta1_cond + xsims_gl_beta2_cond) / 2;
+    burstThresh = prctile(xsims_gl_beta_cond', 75);
+
     % perform epoching in xsims, xsims_gl and u vectors
     %% epoch xsims
 
@@ -74,7 +89,14 @@ for condsel = 1:numel(R.condnames)
             xsims_gl{condsel}(:, idxStartBufferCurr:(idxStartBufferCurr+R.IntP.buffer-1));
         tvecObs_Cond_Buffer{idxEpochCount} = ...
             tvecObs(idxStartBufferCurr:(idxStartBufferCurr+R.IntP.buffer-1));
-
+        
+        % create the relative time for epoching
+        tvecRel_temp = [tvecObs_Cond_Buffer{idxEpochCount}, ...
+            tvecObs_Cond_SPrev{idxEpochCount}, tvecObs_Cond_S{idxEpochCount}];
+        vec_tvecRel{idxEpochCount} = tvecRel_temp - tvecObs_Cond_S{idxEpochCount}(1);
+        
+        % append the beta burst threshold
+        xsims_gl_Cond_burstThresh{idxEpochCount} = burstThresh;
 
         % advance index of epoch
         idxEpochCount = idxEpochCount + 1;
@@ -121,30 +143,32 @@ for condsel = 1:numel(R.condnames)
     X_Cond.xsims.SPrev = xsims_Cond_SPrev;
     X_Cond.xsims.S = xsims_Cond_S;
 
-    X_Cond.xsims.tvec_Buffer = tvec_Cond_Buffer;
-    X_Cond.xsims.tvec_SPrev = tvec_Cond_SPrev;
-    X_Cond.xsims.tvec_S = tvec_Cond_S;
-    X_Cond.xsims.tStart = tStart_xsims_Full;
+%     X_Cond.xsims.tvec_Buffer = tvec_Cond_Buffer;
+%     X_Cond.xsims.tvec_SPrev = tvec_Cond_SPrev;
+%     X_Cond.xsims.tvec_S = tvec_Cond_S;
+%     X_Cond.xsims.tStart = tStart_xsims_Full;
 
     % next append all LFP-related variables
-    X_Cond.xsims_gl.Buffer = xsims_gl_Cond_Buffer;
-    X_Cond.xsims_gl.SPrev = xsims_gl_Cond_SPrev;
+%     X_Cond.xsims_gl.Buffer = xsims_gl_Cond_Buffer;
+%     X_Cond.xsims_gl.SPrev = xsims_gl_Cond_SPrev;
     X_Cond.xsims_gl.S = xsims_gl_Cond_S;
+    X_Cond.xsims_gl.tvecRel = vec_tvecRel;
+    X_Cond.xsims_gl.burstThresh = xsims_gl_Cond_burstThresh;
 
-    X_Cond.xsims_gl.tvec_Buffer = tvecObs_Cond_Buffer;
-    X_Cond.xsims_gl.tvec_SPrev = tvecObs_Cond_SPrev;
-    X_Cond.xsims_gl.tvec_S = tvecObs_Cond_S;
-    X_Cond.xsims_gl.tStart = tStart_xsims_gl_Full;
+%     X_Cond.xsims_gl.tvec_Buffer = tvecObs_Cond_Buffer;
+%     X_Cond.xsims_gl.tvec_SPrev = tvecObs_Cond_SPrev;
+%     X_Cond.xsims_gl.tvec_S = tvecObs_Cond_S;
+%     X_Cond.xsims_gl.tStart = tStart_xsims_gl_Full;
 
     % finally append all u-related variables
     X_Cond.u.Buffer = u_Cond_Buffer;
     X_Cond.u.SPrev = u_Cond_SPrev;
     X_Cond.u.S = u_Cond_S;
 
-    X_Cond.u.tvec_Buffer = tvecU_Cond_Buffer;
-    X_Cond.u.tvec_SPrev = tvecU_Cond_SPrev;
-    X_Cond.u.tvec_S = tvecU_Cond_S;
-    X_Cond.u.tStart = tStart_u_Full;
+%     X_Cond.u.tvec_Buffer = tvecU_Cond_Buffer;
+%     X_Cond.u.tvec_SPrev = tvecU_Cond_SPrev;
+%     X_Cond.u.tvec_S = tvecU_Cond_S;
+%     X_Cond.u.tStart = tStart_u_Full;
 
     % also append metadata (for debugging)
     X_Cond.metadata.tvec = tvec;
