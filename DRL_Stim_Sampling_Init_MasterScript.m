@@ -66,7 +66,7 @@ A_comb_rDBS = combineAStruct(vecA_rDBS, vecR{1});
 
 % combine everything into a single last structure
 X = combineXStruct({X_comb_cDBS, X_comb_rDBS}, vecR{1});
-X_stim = combineXStimStruct({X_stim_comb_cDBS, X_stim_comb_rDBS}, vecR{1});
+nextX = combineXStimStruct({X_stim_comb_cDBS, X_stim_comb_rDBS}, vecR{1});
 A = combineAStruct({A_comb_cDBS, A_comb_rDBS}, vecR{1});
 
 % get output path
@@ -77,7 +77,7 @@ end
 
 % save all structs as output
 save(fullfile(outputPath, 'X_init'), 'X', '-v7.3');
-save(fullfile(outputPath, 'X_stim_init'), 'X_stim', '-v7.3');
+save(fullfile(outputPath, 'nextX_init'), 'nextX', '-v7.3');
 save(fullfile(outputPath, 'A_init'), 'A', '-v7.3');
 
 % now compute reward
