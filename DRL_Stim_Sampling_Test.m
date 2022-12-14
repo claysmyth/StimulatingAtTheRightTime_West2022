@@ -10,6 +10,7 @@ R = setupBasalGangliaModelForDRL(R);                                        % ad
 
 inputPath = fullfile(R.DRL.outPath, 'model');
 initPath = fullfile(R.DRL.outPath, 'initBuffer');
+initEvalPath = fullfile(R.DRL.outPath, 'initBufferEval');
 
 % change these flags
 strExpName = 'debug';
@@ -41,7 +42,7 @@ end
 %% Load all stim patterns
 
 % try to find right directory
-strVecTrain = glob(fullfile(inputPath, strExpName, '**', 'A*'));
+strVecTrain = glob(fullfile(inputPath, strExpName, '**', 'evalA*'));
 
 idxEpoch = [];
 upScaleFactor = fix(fix(1/R.IntP.dt) / R.DRL.dsFs);
@@ -75,30 +76,33 @@ for i = 1:numel(strVecTrain)
         end
         
         % after all indices have been parsed
-        A_i{condsel}.uexs.S = S;
+        evalA_i{condsel}.uexs.S = S;
     end
 
-    vecA{i} = A_i;
+    vec_EvalA{i} = evalA_i;
 end
 
-% combine loaded A structure
-A_comb = combineAStruct(vecA, R_temp);
 
 %% resimulate with new stim
+parfor i = 1:numel(vec_EvalA)
+    % load data again
+    [~, m_i, p_i] = loadModelForDRL(R);                                            
+    X_eval_i = load(fullfile(initEvalPath, 'X_eval_init.mat')).X_eval;
 
-[~, m, p] = loadModelForDRL(R);                                            
-X = load(fullfile(initPath, 'X_init.mat')).X;
+    % resimulate
+    [X_stim_i, ~, R_i] = DRL_resim_bufferStim(X_eval_i, R_temp, m_i, p_i, ...
+        'SScomb', 3, 'exStimStruct', vec_EvalA{i});
 
-% resimulate
-[X_stim, ~, R] = DRL_resim_bufferStim(X, R_temp, m, p, ...
-    'SScomb', 3, 'exStimStruct', A_comb);
+    % downsample
+    X_stim_i = DRL_downSampleData_Redact(X_stim_i, R_i);
 
-% downsample
-X_stim = DRL_downSampleData_Redact(X_stim, R);
+    % recalculate reward
+    R_new = DRL_calc_reward(X_eval_i, X_stim_i, R_i, 'rewardMethod', rewardMethod, ...
+        'boolSave', false, 'init', 0);
+    R_new_cond = R_new{1};
 
-% recalculate reward
-R_new = DRL_calc_reward(X, X_stim, R, 'rewardMethod', rewardMethod, ...
-    'boolSave', false, 'init', 0);
+    evalAvgReturn{i} = mean(R_new_cond);
+end
 
 %% form summary statistics
 
@@ -110,16 +114,7 @@ if exist(pfeOutput, 'file')
     summary = load(pfeOutput).summary;
 end
 
-% compute training loss
-R_new_cond = R_new{1};
-trainAvgReturn = [];
-for i = 1:numel(strVecTrain)
-    idxEpochCurr = idxEpoch == i;
-
-    trainAvgReturn = [trainAvgReturn, mean(R_new_cond(idxEpochCurr))];
-
-end
-
 % save summary output
-summary.trainAvgReturn = trainAvgReturn;
+evalAvgReturn = cat(2, evalAvgReturn{:});
+summary.evalAvgReturn = evalAvgReturn;
 save(pfeOutput, 'summary');
