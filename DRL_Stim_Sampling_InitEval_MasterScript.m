@@ -47,10 +47,10 @@ save(fullfile(outputPath, 'R_eval_init'), 'R_eval', '-v7.3');
 
 % make a separate copy for python
 for condsel = 1:numel(R.condnames)
-    dataPython{condsel}.prev_xsims_gl.S = cat(3, X_eval{condsel}.xsims_gl.S{:});
-    dataPython{condsel}.metadata = X_eval{condsel}.metadata;
+    dataPython_eval{condsel}.prev_xsims_gl.S = cat(3, X_eval{condsel}.xsims_gl.S{:});
+    dataPython_eval{condsel}.metadata = X_eval{condsel}.metadata;
 end
 
-save(fullfile(outputPath, 'dataPython_eval_init'), 'dataPython', '-v6');
+save(fullfile(outputPath, 'dataPython_eval_init'), 'dataPython_eval', '-v6');
 timeElapsed = toc;
 
