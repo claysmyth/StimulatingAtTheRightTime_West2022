@@ -76,12 +76,32 @@ if ~exist(outputPath, 'dir')
 end
 
 % save all structs as output
+R = vecR{1};
 save(fullfile(outputPath, 'X_init'), 'X', '-v7.3');
 save(fullfile(outputPath, 'nextX_init'), 'nextX', '-v7.3');
 save(fullfile(outputPath, 'A_init'), 'A', '-v7.3');
+save(fullfile(outputPath, 'R_init'), 'R', '-v7.3');
 
 % now compute reward
-C = DRL_calc_reward(X, X_stim, vecR{1}, 'rewardMethod', 3);
+C = DRL_calc_reward(X, nextX, vecR{1}, 'rewardMethod', 3);
 
+% make a separate copy for python
+for condsel = 1:numel(R.condnames)
+    dataPython{condsel} = deepCopyStruct(nextX{condsel}, 1);
+
+    dataPython{condsel}.prev_xsims_gl.S = cat(3, X{condsel}.xsims_gl.S{:});
+    dataPython{condsel}.metadata = X{condsel}.metadata;
+
+    % also convert cell into array for python
+    dataPython{condsel}.xsims_gl.S = cat(3, dataPython{condsel}.xsims_gl.S{:});
+
+    % obtain actions
+    dataPython{condsel}.uexs.S = cat(3, A{condsel}.uexs.S{:});
+
+    % obtain rewards
+    dataPython{condsel}.reward = C{condsel};
+end
+
+save(fullfile(outputPath, 'dataPython_init'), 'dataPython', '-v6');
 timeElapsed = toc;
 
