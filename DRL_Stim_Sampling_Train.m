@@ -12,8 +12,8 @@ inputPath = fullfile(R.DRL.outPath, 'model');
 initPath = fullfile(R.DRL.outPath, 'initBuffer');
 
 % change these flags
-strExpName = 'debug';
-rewardMethod = 3;
+useRNN = false;
+rewardMethod = 2;
 
 
 %% sanity check
@@ -22,6 +22,14 @@ rewardMethod = 3;
 R_temp = load(fullfile(initPath, 'R_init.mat')).R;
 stimCh = R_temp.IntP.phaseStim.sensStm(2);
 
+% get model name
+if useRNN
+    strModel = 'rnn';
+else
+    strModel = 'mlp';
+end
+
+% get reward name
 if rewardMethod == 1
     strRewardMethod = 'power';
 
@@ -37,6 +45,10 @@ elseif rewardMethod == 4
 else
     error('Unknown reward method')
 end
+
+
+% form correct experiment name
+strExpName = sprintf('%s_%s', strModel, strRewardMethod);
 
 %% Load all stim patterns
 
